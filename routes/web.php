@@ -15,45 +15,21 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
-Route::get('/', [App\Http\Controllers\LandingController::class, 'index'])->name('landing');
-Route::get('/blog', [App\Http\Controllers\BlogController::class, 'index'])->name('blog.search');
-Route::post('/get-in-touch', [App\Http\Controllers\LandingController::class, 'getInTouch'])->name('get-in-touch');
-Route::get('/projects', [App\Http\Controllers\BlogController::class, 'project'])->name('projects.search');
-Route::get('/blog/{slug}', [App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
-Route::get('/privacy', function () {
-    return view('privacy');
-});
-Route::get('/tos', function () {
-    $data['tos'] = Setting::where('config_key', 'tos')->first();
-    return view('tos', $data);
-});
-
-
-Route::get('count-view',function(){
-    $countActivity = \App\Models\Activity::where('date',date('Y-m-d'))->first();
-    if($countActivity){
-        $countActivity->count_view = $countActivity->count_view + 1;
-        $countActivity->save();
-    }else{
-        $countActivity = new \App\Models\Activity();
-        $countActivity->count_view = 1;
-        $countActivity->date = date('Y-m-d');
-        $countActivity->save();
-    }
-    return response()->json(['status' => 'success']);
-})->name('count-view');
-
-Route::get('/leaderboard', [App\Http\Controllers\Api\ResultTestController::class, 'getLeaderboard']);
-
-
-Route::get('/heker/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/heker/login', [LoginController::class, 'login']);
+Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('google', [App\Http\Controllers\GoogleController::class, 'redirect']);
-Route::get('google/callback', [App\Http\Controllers\GoogleController::class, 'callback']);
 
 Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('items', App\Http\Controllers\Admin\ItemController::class);
+    Route::get('/items/{id}/change-show', [App\Http\Controllers\Admin\ItemController::class, 'changeShow']);
+
+    Route::resource('item-installeds', App\Http\Controllers\Admin\ItemInstalledController::class);
+    Route::get('/item-installeds/{id}/change-show', [App\Http\Controllers\Admin\ItemInstalledController::class, 'changeShow']);
+
+    Route::post('item-installeds/{id}/maintenance', [App\Http\Controllers\Admin\ItemInstalledController::class, 'storeMaintenance'])->name('item-installeds.maintenance.store');
+
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::get('/users/{id}/change-show', [App\Http\Controllers\Admin\UserController::class, 'changeShow']);
 
@@ -61,8 +37,6 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::get('/additional-types/{id}/change-show', [App\Http\Controllers\Admin\AdditionalTypeController::class, 'changeShow']);
 
     Route::resource('messages', App\Http\Controllers\Admin\MessageController::class);
-
-
     Route::resource('additional-infos', App\Http\Controllers\Admin\AdditionalInfoController::class);
     Route::get('/additional-infos/{id}/change-show', [App\Http\Controllers\Admin\AdditionalInfoController::class, 'changeShow']);
 
@@ -77,10 +51,6 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
         Route::resource('categories-question', App\Http\Controllers\Admin\CategoryQuestionController::class);
         Route::get('/categories-question/{id}/change-show', [App\Http\Controllers\Admin\CategoryQuestionController::class, 'changeShow']);
     });
-
-
-
-
     Route::post('user/detail/{id}', [App\Http\Controllers\Admin\UserController::class, 'updateDetail'])->name('admin.user.update');
 
     //setting
@@ -88,21 +58,7 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::resource('word', App\Http\Controllers\Admin\WordController::class);
     Route::resource('category-word', App\Http\Controllers\Admin\CategoryWordController::class);
     Route::get('/api/word/search', [App\Http\Controllers\Admin\WordController::class, 'getWord']);
-
 });
-Route::get('/test', [App\Http\Controllers\Api\ApiController::class, 'test']);
-Route::get('/gabut', function () {
-    return view('gabut');
-});
-Route::get('/privacy', function(){
-return view('privacy');
-})->name('home');
-
-Route::middleware('role')->group(function () {
-    Route::get('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'index']);
-    Route::post('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'delete'])->name('delete');
-});
-
 
 Route::get('/clear-cache',function(){
     Artisan::call('cache:clear');
@@ -123,9 +79,3 @@ Route::get('/generate-sitemap',function(){
     Artisan::call('sitemap:generate');
     return "sitemap-generated";
 });
-
-Route::get('/sitemap', [App\Http\Controllers\LandingController::class, 'sitemap'])->name('sitemap');
-
-
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

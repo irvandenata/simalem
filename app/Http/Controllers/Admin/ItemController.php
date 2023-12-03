@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\CustomException;
 use App\Helpers\GlobalFunction;
 use App\Http\Controllers\Controller;
-use App\Models\ArticleCategory;
+use App\Models\Item;
+use App\Models\ItemBrand;
+use App\Models\ItemType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
-class ArticleCategoryController extends Controller
+class ItemController extends Controller
 {
-    protected $name = 'Article - Category';
-    protected $breadcrumb = '<strong>Data</strong> Category';
-    protected $modul = 'article-category';
-    protected $route = 'article-categories';
-    protected $view = 'admin.article-category';
+    protected $name = 'Alat Elektromedik';
+    protected $breadcrumb = '<strong>Data</strong> Alat Elektromedik';
+    protected $modul = 'item';
+    protected $route = 'items';
+    protected $view = 'admin.item';
     protected $newModel;
     protected $model;
     protected $rows;
@@ -27,28 +30,28 @@ class ArticleCategoryController extends Controller
     protected $editLink;
     public function __construct()
     {
-        $this->newModel = new ArticleCategory();
-        $this->model = ArticleCategory::query();
+        $this->newModel = new Item();
+        $this->model = Item::query();
         $this->rows = [
-            'name'=>['Status','Name','Slug','Image'],
-            'column' => ['status','name','slug','image']
+            'name'=>['Nama Alat','Tipe','Merek'],
+            'column' => ['name','type','brand']
         ];
-        $this->createLink = route('admin.article-categories.create');
-        $this->storeLink = route('admin.article-categories.store');
-        $this->indexLink = route('admin.article-categories.index');
-        $this->updateLink = 'admin.article-categories.update';
-        $this->editLink = 'admin.article-categories.edit';
+        $this->createLink = route('admin.items.create');
+        $this->storeLink = route('admin.items.store');
+        $this->indexLink = route('admin.items.index');
+        $this->updateLink = 'admin.items.update';
+        $this->editLink = 'admin.items.edit';
     }
 
     protected static function validateRequest($request, $type)
     {
         if ($type == 'create') {
             $result = Validator::make($request->all(), [
-                // 'name' => 'required',
+                'name' => 'required',
             ]);
         } else {
             $result = Validator::make($request->all(), [
-                // 'name' => 'required',
+                'name' => 'required',
             ]);
         }
 
@@ -83,12 +86,15 @@ class ArticleCategoryController extends Controller
                     }
                     return '<button onClick="controlShow(' . $item->id . ')" class="btn px-2 rounded text-white text-center status ' . $class . '">' . $name . '</button>';
                 })
-                    ->editColumn('image',function($item){
-                        return '<img src="'.asset($item->image?('/storage/'.$item->image):"assets/img/no-image.png").'" onClick="showImage(this)" class="cursor-pointer" width="50px" >';
-                    })
+                ->addColumn('question', function ($item) {
+                    return $item->questions?$item->questions->count():0;
+                })
+                ->editColumn('image',function($item){
+                    return '<img src="'.asset($item->image?('/storage/'.$item->image):"assets/img/no-image.png").'" onClick="showImage(this)" class="cursor-pointer" width="50px" >';
+                })
                 ->removeColumn('id')
                 ->addIndexColumn()
-                ->rawColumns(['action','status','image'])
+                ->rawColumns(['action','status','image','description'])
                 ->make(true);
         }
         $data['title'] = $this->name;
@@ -96,6 +102,9 @@ class ArticleCategoryController extends Controller
         $data['rows'] = $this->rows;
         $data['createLink'] = $this->createLink;
         $data['view'] = $this->view;
+
+        $data['types'] = ItemType::all();
+        $data['brands'] = ItemBrand::all();
         return view($this->view.'.index', $data);
     }
     /**
@@ -128,13 +137,22 @@ class ArticleCategoryController extends Controller
             if ($v->fails()) {
                 throw new CustomException("error", 401, null, $v->errors()->all());
             }
-
-            $item = $this->newModel;
-            if($request->image){
-                $item->image = GlobalFunction::storeSingleImage($request->image, $this->modul);
+            $findType = ItemType::where('name',$request->type)->first();
+            if(!$findType){
+                $type = new ItemType();
+                $type->name = $request->type;
+                $type->save();
             }
+            $findBrand = ItemBrand::where('name',$request->brand)->first();
+            if(!$findBrand){
+                $brand = new ItemBrand();
+                $brand->name = $request->brand;
+                $brand->save();
+            }
+            $item = $this->newModel;
             $item->name = $request->name;
-            $item->slug = GlobalFunction::makeSlug($this->model, $request->name);
+            $item->type = $request->type;
+            $item->brand = $request->brand;
             $item->save();
             DB::commit();
         } catch (Exception $e) {
@@ -167,9 +185,10 @@ class ArticleCategoryController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(ArticleCategory $articleCategory)
+    public function edit($id)
     {
-        return $articleCategory;
+        $categoryQuestion = $this->findById($id);
+        return $categoryQuestion;
     }
 
     /**
@@ -188,15 +207,21 @@ class ArticleCategoryController extends Controller
                 throw new CustomException('error', 401, null, $v->errors()->all());
             }
             $item = $this->findById($id);
-
-            if($item->name != $request->name){
-                $item->slug = GlobalFunction::makeSlug($this->model, $request->name);
+            $findType = ItemType::where('name',$request->type)->first();
+            if(!$findType){
+                $type = new ItemType();
+                $type->name = $request->type;
+                $type->save();
             }
-            if($request->image){
-                $item->image = GlobalFunction::storeSingleImage($request->image, $this->modul);
+            $findBrand = ItemBrand::where('name',$request->brand)->first();
+            if(!$findBrand){
+                $brand = new ItemBrand();
+                $brand->name = $request->brand;
+                $brand->save();
             }
             $item->name = $request->name;
-
+            $item->type = $request->type;
+            $item->brand = $request->brand;
             $item->save();
             DB::commit();
         } catch (Exception $e) {

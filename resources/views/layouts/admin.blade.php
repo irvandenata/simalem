@@ -103,63 +103,17 @@
               <div data-i18n="Analytics">Dashboard</div>
             </a>
           </li>
-          <li class="menu-item @if (Request::is('admin/abouts*')) active @endif">
-            <a href="{{ route('admin.users.index') }}" class="menu-link">
+          <li class="menu-item @if (Request::is('admin/item-installeds*')) active @endif">
+            <a href="{{ route('admin.item-installeds.index') }}" class="menu-link">
               <i class="menu-icon tf-icons bx bx-carousel"></i>
-              <div data-i18n="Users">About Me</div>
+              <div data-i18n="Users">Daftar Alat Terinstallasi</div>
             </a>
           </li>
-          <li class="menu-item @if (Request::is('admin/messages*')) active @endif">
-            <a href="{{ route('admin.messages.index') }}" class="menu-link">
+          <li class="menu-item @if (Request::is('admin/items*')) active @endif">
+            <a href="{{ route('admin.items.index') }}" class="menu-link">
               <i class="menu-icon tf-icons bx bx-carousel"></i>
-              <div data-i18n="Users">Message</div>
+              <div data-i18n="Users">Daftar Alat</div>
             </a>
-          </li>
-          <li class="menu-item @if (Request::is('admin/additional*')) open @endif">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
-              <i class="menu-icon tf-icons bx bx-layout"></i>
-              <div data-i18n="Layouts">Additional Info</div>
-            </a>
-
-            <ul class="menu-sub">
-              <li class="menu-item @if (Request::is('admin/additional-infos*')) active @endif">
-                <a href="{{ route('admin.additional-infos.index') }}" class="menu-link">
-                  <div data-i18n="Without menu">Content</div>
-                </a>
-              </li>
-              <li class="menu-item @if (Request::is('admin/additional-types*')) active @endif">
-                <a href="{{ route('admin.additional-types.index') }}" class="menu-link">
-                  <div data-i18n="Without menu">Type</div>
-                </a>
-              </li>
-
-            </ul>
-          </li>
-          <li class="menu-item @if (Request::is('admin/settings*')) active @endif">
-            <a href="{{ route('admin.settings.index') }}" class="menu-link">
-              <i class="menu-icon tf-icons bx bx-carousel"></i>
-              <div data-i18n="Users">Setting</div>
-            </a>
-          </li>
-          <li class="menu-item @if (Request::is('admin/article*')) open @endif">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
-              <i class="menu-icon tf-icons bx bx-layout"></i>
-              <div data-i18n="Layouts">Article</div>
-            </a>
-
-            <ul class="menu-sub">
-              <li class="menu-item @if (Request::is('admin/articles*')) active @endif">
-                <a href="{{ route('admin.articles.index') }}" class="menu-link">
-                  <div data-i18n="Without menu">Content</div>
-                </a>
-              </li>
-              <li class="menu-item @if (Request::is('admin/article-categories*')) active @endif">
-                <a href="{{ route('admin.article-categories.index') }}" class="menu-link">
-                  <div data-i18n="Without menu">Category</div>
-                </a>
-              </li>
-
-            </ul>
           </li>
 
           {{--
@@ -252,7 +206,7 @@
         <!-- Navbar -->
 
         <nav
-          class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+          class="layout-navbar  navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
           id="layout-navbar" style="z-index: 3 !important">
           <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
             <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">

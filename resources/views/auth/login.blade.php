@@ -5,7 +5,7 @@
     class="snap-madatory snap-center mx-auto container min-h-screen justify-center flex lg:flex-row flex-col  lg:items-center "
     id="about-me">
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login.post') }}">
       @csrf
 
       <div class="row mb-3">
