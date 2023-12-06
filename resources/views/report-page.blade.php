@@ -325,7 +325,7 @@
             <div class="mt-4 col-3 text-center image-`+amountImage+`">
                 <img src="${e.target.result}" class="img-fluid" onclick="showImage(this)" alt="">
                 <button type="button" class="btn btn-danger btn-sm mt-2" onclick="removeImage(`+amountImage+`)">Remove</button>
-                <input type="file" name="image[]" value="${file}" hidden>
+                <input type="hidden" name="image[]" value="${e.target.result}">
             </div>
           `);
             $('#image-upload').val('');

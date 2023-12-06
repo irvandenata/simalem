@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\GlobalFunction;
 use App\Models\ItemInstalled;
+use App\Models\ReportImage;
 use App\Models\ReportProblem;
 use App\Models\User;
 use App\Notifications\ReportCreated;
@@ -64,6 +65,9 @@ class CustomerReportController extends Controller
         $report = new ReportProblem();
         $report->item_id = $data['item']->id;
         $report->description = $request->description;
+
+
+        $report->save();
         if($request->image){
             foreach ($request->image as $key => $value) {
                 $image = new ReportImage();
@@ -72,7 +76,6 @@ class CustomerReportController extends Controller
                 $image->save();
             }
         }
-        $report->save();
 
         Notification::send(User::all(), new ReportCreated($report->id));
         $data['title'] = 'Laporan Masalah';
