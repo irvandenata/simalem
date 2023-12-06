@@ -85,7 +85,7 @@ class ItemInstalledController extends Controller
             return DataTables::of($items)
                 ->addColumn('action', function ($item) {
                     return '
-                    <a class="btn btn-primary btn-sm" href="'.url('/report-problem/'.$item->unique_code).'"><i class="fas text-white"></i> Lihat Halaman Laporan</span></a>
+                    <a class="btn btn-primary btn-sm" target="blank" href="'.url('/report-problem/'.$item->unique_code).'"><i class="fas text-white"></i> Lihat Halaman Laporan</span></a>
                            <a class="btn btn-danger btn-sm"  onclick="deleteItem(' . $item->id . ')"><i class="fas fa-trash text-white"></i></span></a> <a class="btn btn-warning btn-sm" href="' . route($this->editLink, $item->id) . '" ><i class="fas fa-eye text-white    "></i></span></a>';
                 })
                 ->addColumn('item', function ($item) {
