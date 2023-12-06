@@ -15,12 +15,26 @@ use Illuminate\Support\Facades\Route;
 |
  */
 
+Route::get('/report-problem/{id}', [App\Http\Controllers\CustomerReportController::class, 'index'])->name('report-problem');
+Route::get('/report-problem/{id}/{status}', [App\Http\Controllers\CustomerReportController::class, 'showMessage'])->name('show-message');
+Route::post('/report-problem/{id}', [App\Http\Controllers\CustomerReportController::class, 'store'])->name('report-problem.send');
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/datatable', [App\Http\Controllers\Admin\DashboardController::class, 'datatable'])->name('dashboard.data');
+
+    Route::get('/admin/read-notif',function(){
+        $idNotif = request()->id;
+        $notif = auth()->user()->notifications()->where('id',$idNotif)->first()->markAsRead();
+        $link = request()->link;
+        if($link){
+            return redirect()->to($link);
+        }
+        return response()->json(['success'=>true]);
+    })->name('read-notif');
 
     Route::resource('items', App\Http\Controllers\Admin\ItemController::class);
     Route::get('/items/{id}/change-show', [App\Http\Controllers\Admin\ItemController::class, 'changeShow']);
@@ -28,7 +42,14 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::resource('item-installeds', App\Http\Controllers\Admin\ItemInstalledController::class);
     Route::get('/item-installeds/{id}/change-show', [App\Http\Controllers\Admin\ItemInstalledController::class, 'changeShow']);
 
+    Route::get('notif-warning', [App\Http\Controllers\Admin\NotifController::class, 'notifMaintenance'])->name('notif-warning');
+
+
+
     Route::post('item-installeds/{id}/maintenance', [App\Http\Controllers\Admin\ItemInstalledController::class, 'storeMaintenance'])->name('item-installeds.maintenance.store');
+
+    Route::resource('report-problems', App\Http\Controllers\Admin\ReportProblemController::class);
+    Route::post('/report-problems/{id}/change', [App\Http\Controllers\Admin\ReportProblemController::class, 'change'])->name('report-problems.change');
 
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::get('/users/{id}/change-show', [App\Http\Controllers\Admin\UserController::class, 'changeShow']);

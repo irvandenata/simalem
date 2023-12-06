@@ -55,8 +55,12 @@
                       <label for="title">Pilih Alat Elektromedik</label>
                       <select name="item_id" id="" class="form-control select2" required>
                         @foreach ($items as $item)
-                          <option disabled selected value="">Select an Option</option>
-                          <option value="{{ $item->id }}" {{ selectedOption($item->id, $itemInstalled->item_id) }}>
+
+                          <option value="{{ $item->id }}"
+                            @if ($item->id == $itemInstalled->item_id)
+                              selected
+                            @endif
+                            >
                             {{ $item->name }} - Merek : {{ $item->brand }} - Tipe :
                             {{ $item->type }} </option>
                           </option>
@@ -79,6 +83,7 @@
                         <option value="0" {{ selectedOption(0, $itemInstalled->status) }}>Baik</option>
                         <option value="1" {{ selectedOption(1, $itemInstalled->status) }}>Rusak</option>
                         <option value="2" {{ selectedOption(2, $itemInstalled->status) }}>Perbaikan</option>
+                        <option value="3" {{ selectedOption(3, $itemInstalled->status) }}>Berkendala</option>
                       </select>
                     </div>
                   </div>

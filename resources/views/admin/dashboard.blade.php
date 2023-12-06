@@ -39,7 +39,7 @@
     <!--/ Total Revenue -->
     <div class="col-12">
       <div class="row data">
-        <div class="col-lg-3 col-xs-12 col-sm-12 col-md-12 mb-4">
+        <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12 mb-4">
           <div class="card">
             <div class="card-body">
               <div class="row">
@@ -48,9 +48,24 @@
                   <i class="menu-icon tf-icons  bx bx-user-plus" style="font-size:50px;text-align:center;height:100%"></i>
                 </div>
                 <div class="col-8">
-                  <span class="d-block">Users</span>
-                  <h3 class="card-title text-nowrap mb-2">0 People</h3>
-                  <h3 class="card-title text-nowrap mb-2">0 New</h3>
+                  <span class="d-block">Alat Terinstall</span>
+                  <div class="row">
+                    <div class="col-6">
+                      <small class="card-title text-nowrap mb-2">Total {{ $allItem }}</small>
+
+                    </div>
+                    <div class="col-6">
+                      <small class="card-title text-nowrap mb-2">Normal {{ $goodCondition }}</small>
+
+                    </div>
+                    <div class="col-6">
+                      <small class="card-title text-nowrap mb-2">Rusak {{ $badCondition }}</small>
+
+                    </div>
+                    <div class="col-6">
+                      <small class="card-title text-nowrap mb-2">Berkendala {{ $reportCondition }}</small>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -58,7 +73,7 @@
         </div>
 
 
-        <div class="col-lg-3 col-xs-12 col-sm-12 col-md-12 mb-4">
+        <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12 mb-4">
           <div class="card">
             <div class="card-body">
               <div class="row">
@@ -67,9 +82,8 @@
                     style="font-size:50px;text-align:center;height:100%"></i>
                 </div>
                 <div class="col-8">
-                  <span class="d-block">Show Article</span>
-                  <h3 class="card-title text-nowrap mb-2">0 Activity</h3>
-                  <h3 class="card-title text-nowrap mb-2">0 User</h3>
+                  <span class="d-block">Laporan Perlu Tanggapan</span>
+                  <h1 class="card-title text-nowrap mb-2">{{ $reportProblem }}</h1>
                 </div>
               </div>
             </div>
@@ -77,7 +91,7 @@
         </div>
 
 
-        <div class="col-lg-3 col-xs-12 col-sm-12 col-md-12 mb-4">
+        <div class="col-lg-4 col-xs-12 col-sm-12 col-md-12 mb-4">
           <div class="card">
             <div class="card-body">
               <div class="row">
@@ -86,31 +100,14 @@
                     style="font-size:50px;text-align:center;height:100%"></i>
                 </div>
                 <div class="col-8">
-                  <span class="d-block">Show Ads</span>
-                  <h3 class="card-title text-nowrap mb-2">0 Activity</h3>
-                  <h3 class="card-title text-nowrap mb-2">0 User</h3>
+                  <span class="d-block">Rumah Sakit</span>
+                  <h1 class="card-title text-nowrap mb-2">{{ $hospital->count() }}</h1>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="col-lg-3 col-xs-12 col-sm-12 col-md-12 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <div class="row">
-                <div class="col-4 my-auto">
-                  <i class="menu-icon tf-icons bx bx-task bg-transparent-blue"
-                    style="font-size:50px;text-align:center;height:100%"></i>
-                </div>
-                <div class="col-8">
-                  <span class="d-block">Test</span>
-                  <h3 class="card-title text-nowrap mb-2">0 Activity</h3>
-                  <h3 class="card-title text-nowrap mb-2">0 User</h3>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
 
 
       </div>
@@ -120,8 +117,33 @@
       <div class="card">
         <div class="row row-bordered g-0">
           <div class="col-12">
-            <h4 class="card-header m-0 me-2 pb-3">User Activity</h4>
-            <div id="totalRevenueChart" class="px-2"></div>
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-12">
+                    <div class="text-right">
+                        <div class="btn btn-outline-warning btn-sm mb-2" onclick="reloadDatatable()">Reload Data</div>
+                      </div>
+                    <div class="table-responsive">
+
+                      <table id="datatable" style="max-width:100% !important" class="table m-t-30">
+                        <thead>
+                          <tr>
+                            <th>No</th>
+                            <th>Nama Rumah Sakit</th>
+                            <th>Alamat</th>
+                            <th>Telepon</th>
+                            <th>Jumlah Alat</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -129,11 +151,56 @@
   </div>
 @endsection
 
+
 @push('script')
-  <script src="{{ asset('assets/js/apexcharts.min.js') }}"></script>
-  <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-@endpush
+  <script>
+    let dataTable = $('#datatable').DataTable({
+      dom: 'lBfrtip',
+      responsive: true,
+      processing: true,
+      serverSide: true,
+      searching: true,
+      pageLength: 5,
+      lengthMenu: [
+        [5, 10, 15, -1],
+        [5, 10, 15, "All"]
+      ],
+      ajax: {
+        url: "{{ route('admin.dashboard.data') }}",
+        type: 'GET',
+      },
+      columns: [
+        {
+          data: 'DT_RowIndex',
+          orderable: false,
+          searchable: false
+        },
+        {
+          data: 'hospital',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'address',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'contact_person',
+          orderable: true,
+          searchable: true
+        },
+        {
+          data: 'total',
+          orderable: true,
+          searchable: true
+        },
+      ]
+    });
 
-@push('js')
-
+    //add button reloa
+    function reloadDatatable() {
+      dataTable.ajax.reload();
+    }
+  </script>
 @endpush

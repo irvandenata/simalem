@@ -55,6 +55,10 @@
     body {
       font-family: 'Poppins', sans-serif !important;
     }
+
+    .page-item.active .page-link {
+      z-index: 2;
+    }
   </style>
   <!-- Page CSS -->
 
@@ -85,7 +89,8 @@
       <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
         <div class="app-brand demo">
           <a href="/admin/dashboard" class="app-brand-link">
-            <span class="demo menu-text fw-bolder ms-2 " style="margin-left: 10px !important; font-size:20px">{{ env('APP_NAME') }}</span>
+            <span class="demo menu-text fw-bolder ms-2 "
+              style="margin-left: 10px !important; font-size:20px">{{ env('APP_NAME') }}</span>
           </a>
 
           <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -113,6 +118,13 @@
             <a href="{{ route('admin.items.index') }}" class="menu-link">
               <i class="menu-icon tf-icons bx bx-carousel"></i>
               <div data-i18n="Users">Daftar Alat</div>
+            </a>
+          </li>
+
+          <li class="menu-item @if (Request::is('admin/report-problems*')) active @endif">
+            <a href="{{ route('admin.report-problems.index') }}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-carousel"></i>
+              <div data-i18n="Users">Laporan Kendala Alat</div>
             </a>
           </li>
 
@@ -205,8 +217,7 @@
       <div class="layout-page relative">
         <!-- Navbar -->
 
-        <nav
-          class="layout-navbar  navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
+        <nav class="layout-navbar  navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
           id="layout-navbar" style="z-index: 3 !important">
           <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
             <a class="nav-item nav-link px-0 me-xl-4" href="javascript:void(0)">
@@ -225,6 +236,92 @@
 
             <ul class="navbar-nav flex-row align-items-center ms-auto">
               <!-- User -->
+              <li class="nav-item dropdown-notifications navbar-dropdown dropdown me-3 me-xl-1">
+
+                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside" aria-expanded="false">
+                  <i class="bx bx-bell bx-sm"></i>
+                  @if (auth()->user()->unreadNotifications->count() > 0)
+                    <span class="badge bg-danger rounded-pill badge-notifications">
+                      {{ auth()->user()->unreadNotifications->count() }}
+                    </span>
+                  @endif
+
+                </a>
+                <ul style="width:400px" class="dropdown-menu dropdown-menu-end py-0">
+                  <li class="dropdown-menu-header border-bottom">
+                    <div class="dropdown-header d-flex align-items-center py-3">
+                      <h5 class="text-body mb-0 me-auto">Notification</h5>
+                      <a href="javascript:void(0)" class="dropdown-notifications-all text-body"
+                        data-bs-toggle="tooltip" data-bs-placement="top" aria-label="Mark all as read"
+                        data-bs-original-title="Mark all as read"><i class="bx fs-4 bx-envelope-open"></i></a>
+                    </div>
+                  </li>
+                  <li class="dropdown-notifications-list scrollable-container ps">
+                    <ul class="list-group list-group-flush">
+
+                      @foreach (auth()->user()->unreadNotifications as $notif)
+                        @php
+                          $data = $notif->data;
+                        @endphp
+                        <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                          <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                              <div class="avatar">
+                                <span class="avatar-initial rounded-circle bg-label-success">NW</span>
+                              </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h3 class="mb-1">{{ $data['title']??"-" }}</h3>
+                                <small class="mb-1">{{ $data['data'] }}</small><br>
+                              <a href="{{ route('admin.read-notif') }}?link={{ $data['link'] }}&id={{ $notif->id }}"
+                                class="mb-0">Lihat Detail</a><br>
+                              <small
+                                class="text-muted">{{ Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}</small>
+                            </div>
+                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                              <a href="javascript:void(0)" class="dropdown-notifications-read"><span
+                                  class="badge badge-dot"></span></a>
+                              <a href="javascript:void(0)" class="dropdown-notifications-archive"  data-id="{{ $notif->id }}"><span
+                                  class="bx bx-x"></span></a>
+                            </div>
+                          </div>
+                        </li>
+                      @endforeach
+                      {{-- @foreach (auth()->user()->readNotifications()->orderBy('created_at', 'desc')->limit(5)->get() as $notif)
+                        @php
+                          $data = $notif->data;
+                        @endphp
+                        <li class="list-group-item list-group-item-action dropdown-notifications-item">
+                          <div class="d-flex">
+                            <div class="flex-shrink-0 me-3">
+                              <div class="avatar">
+                                <span class="avatar-initial rounded-circle bg-label-secondary">IN</span>
+                              </div>
+                            </div>
+                            <div class="flex-grow-1">
+                              <h3 class="mb-1">{{ $data['title']??"-" }}</h3>
+                              <small class="mb-1">{{ $data['data'] }}</small><br>
+                              <a href="{{ route('admin.read-notif') }}?link={{ $data['link'] }}&id={{ $notif->id }}"
+                                class="mb-0">Lihat Detail</a><br>
+                              <small
+                                class="text-muted">{{ Carbon\Carbon::parse($notif->created_at)->diffForHumans() }}</small>
+                            </div>
+                            <div class="flex-shrink-0 dropdown-notifications-actions">
+                              <a href="javascript:void(0)" class="dropdown-notifications-read"><span
+                                  class="badge badge-dot"></span></a>
+                              <a href="javascript:void(0)" class="dropdown-notifications-archive"><span
+                                  class="bx bx-x"></span></a>
+                            </div>
+                          </div>
+                        </li>
+                      @endforeach --}}
+
+                    </ul>
+                  </li>
+
+                </ul>
+              </li>
               <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                   <div class="avatar avatar-online">
@@ -381,8 +478,6 @@
       width: 'resolve',
       height: 'resolve'
     });
-
-
   </script>
   <script>
     $('.close-modal').on('click', function() {
@@ -406,27 +501,27 @@
     @if (Session::get('errors'))
 
       @foreach (session('errors') as $error)
-      Toast.fire({
-        icon: 'error',
-        title: '{{ $error }}'
-      })
+        Toast.fire({
+          icon: 'error',
+          title: '{{ $error }}'
+        })
       @endforeach
     @endif
 
 
     @if (Session::get('error'))
 
-    Toast.fire({
-      icon: 'error',
-      title: '{{ Session::get('error') }}'
-    })
+      Toast.fire({
+        icon: 'error',
+        title: '{{ Session::get('error') }}'
+      })
     @endif
     @if (Session::get('success'))
 
-    Toast.fire({
-      icon: 'success',
-      title: '{{ Session::get('success') }}'
-    })
+      Toast.fire({
+        icon: 'success',
+        title: '{{ Session::get('success') }}'
+      })
     @endif
     function showImage(item) {
       Swal.fire({
@@ -448,6 +543,17 @@
   <script>
     $(document).ready(function() {
       $('.overlay').hide();
+      $('.dropdown-notifications-archive').on('click', function() {
+        $(this).parent().parent().parent().remove();
+
+        $.ajax({
+          url: "{{ route('admin.read-notif') }}" + "?id="+  $(this).data('id'),
+          type: 'GET',
+          success: function(result) {
+            console.log(result);
+          }
+        });
+      });
     });
   </script>
 </body>

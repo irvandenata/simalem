@@ -13,6 +13,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\ActivityCategory;
 use App\Models\CategoryQuestion;
+use App\Models\ItemInstalled;
+use App\Models\ReportProblem;
 use App\Models\User;
 
 class DashboardController extends Controller
@@ -49,7 +51,34 @@ class DashboardController extends Controller
 
         $data['title'] = $this->name;
         $data['breadcrumb'] = $this->name;
+        $data['hospital'] = ItemInstalled::select('hospital')->groupBy('hospital')->get();
+        $data['allItem'] = ItemInstalled::count();
+        $data['goodCondition'] = ItemInstalled::where('status',0)->count();
+        $data['badCondition'] = ItemInstalled::where('status',1)->count();
+        $data['reportCondition'] = ItemInstalled::where('status',3)->count();
+        $data['reportProblem'] = ReportProblem::where('status',0)->count();
+
         return view('admin.dashboard', $data);
+    }
+
+    public function datatable (Request $request){
+
+        $items = ItemInstalled::selectRaw('hospital, count(*) as total'
+        )->groupBy('hospital')->get();
+        return DataTables::of($items)
+        ->addColumn('total', function ($item) {
+            return $item->total;
+        })
+        ->addColumn('address', function ($item) {
+            return ItemInstalled::where('hospital',$item->hospital)->first()->address;
+        })
+        ->addColumn('contact_person', function ($item) {
+            return ItemInstalled::where('hospital',$item->hospital)->first()->contact_person;
+        })
+        ->removeColumn('id')
+        ->addIndexColumn()
+        ->rawColumns(['action'])
+        ->make(true);
     }
 
 }

@@ -32,7 +32,8 @@ return new class extends Migration
             $table->text('maintenance_description_third')->nullable();
             $table->date('maintenance_created_at_third')->nullable();
             $table->date('maintenance_updated_at_third')->nullable();
-            $table->tinyInteger('status')->comment('0: Baik, 1: Rusak, 2: Perbaikan');
+            $table->string('unique_code')->nullable();
+            $table->tinyInteger('status')->comment('0: Baik, 1: Rusak, 2: Perbaikan, 3: Berkendala');
             $table->timestamps();
         });
     }

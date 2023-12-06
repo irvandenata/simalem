@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\GlobalFunction;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\ItemInstalled;
@@ -33,8 +34,8 @@ class ItemInstalledController extends Controller
         $this->newModel = new ItemInstalled();
         $this->model = ItemInstalled::query();
         $this->rows = [
-            'name' => ['Rumah Sakit', 'Alat', "Kondisi Alat", 'Maintenance Terakhir', 'Status Garansi'],
-            'column' => ['hospital', 'item', 'item_status', 'latest_maintenance', 'warranty_status'],
+            'name' => ['Rumah Sakit', 'Alat','Nomor Seri', "Kondisi Alat", 'Maintenance Terakhir', 'Status Garansi'],
+            'column' => ['hospital', 'item', 'serial_number','item_status', 'latest_maintenance', 'warranty_status'],
         ];
         $this->createLink = route('admin.item-installeds.create');
         $this->storeLink = route('admin.item-installeds.store');
@@ -91,14 +92,17 @@ class ItemInstalledController extends Controller
                 })
                 ->editColumn('item_status', function ($item) {
                     if ($item->status == 0) {
-                        $name = 'Baik';
+                        $name = 'Normal';
                         $class = 'success';
                     } else if ($item->status == 1) {
                         $name = 'Rusak';
                         $class = 'danger';
-                    } else {
-                        $name = 'Dalam Perbaikan';
+                    } else if ($item->status == 3) {
+                        $name = 'Berkendala';
                         $class = 'warning';
+                    }else{
+                        $name = 'Perbaikan';
+                        $class = 'primary';
                     }
                     return '<div class="badge bg-' . $class . '">' . $name . '</div>';
                 })
@@ -188,6 +192,8 @@ class ItemInstalledController extends Controller
             $item->maintenance_date_second = $request->maintenance_date_second;
             $item->maintenance_date_third = $request->maintenance_date_third;
             $item->status = 0;
+            //random unique code 8 char
+            $item->unique_code = GlobalFunction::generateRandomString(8);
             $item->save();
             DB::commit();
             return redirect()->route($this->editLink, $item->id)->with('success', 'Data berhasil ditambahkan');
@@ -279,6 +285,7 @@ class ItemInstalledController extends Controller
             DB::commit();
             return redirect()->route($this->editLink, $item->id)->with('success', 'Data di perbaharui');
         } catch (Exception $e) {
+            dd($e);
             DB::rollback();
 
             return redirect()->back()->with('error', $e->getMessage());

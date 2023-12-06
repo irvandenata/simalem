@@ -5,21 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\CustomException;
 use App\Helpers\GlobalFunction;
 use App\Http\Controllers\Controller;
-use App\Models\Item;
-use App\Models\ItemBrand;
-use App\Models\ItemType;
+use App\Models\ReportProblem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
-class ItemController extends Controller
+class ReportProblemController extends Controller
 {
-    protected $name = 'Alat Elektromedik';
-    protected $breadcrumb = '<strong>Data</strong> Alat Elektromedik';
-    protected $modul = 'item';
-    protected $route = 'items';
-    protected $view = 'admin.item';
+    protected $name = 'Laporan Kendala Alat';
+    protected $breadcrumb = '<strong>Data</strong> Laporan Kendala Alat';
+    protected $modul = 'report-problem';
+    protected $route = 'report-problems';
+    protected $view = 'admin.report-problem';
     protected $newModel;
     protected $model;
     protected $rows;
@@ -30,17 +28,17 @@ class ItemController extends Controller
     protected $editLink;
     public function __construct()
     {
-        $this->newModel = new Item();
-        $this->model = Item::query();
+        $this->newModel = new ReportProblem();
+        $this->model = ReportProblem::query();
         $this->rows = [
-            'name'=>['Nama Alat','Tipe','Merek'],
-            'column' => ['name','type','brand']
+            'name'=>['Pelapor','Detail Alat','Nomor Seri','Status','Tanggal Pelaporan','Tanggal Tanggapan','Tanggal Selesai'],
+            'column' => ['hospital','item','serial_number','status','created_at','response_at','finished_at']
         ];
-        $this->createLink = route('admin.items.create');
-        $this->storeLink = route('admin.items.store');
-        $this->indexLink = route('admin.items.index');
-        $this->updateLink = 'admin.items.update';
-        $this->editLink = 'admin.items.edit';
+        $this->createLink = route('admin.report-problems.create');
+        $this->storeLink = route('admin.report-problems.store');
+        $this->indexLink = route('admin.report-problems.index');
+        $this->updateLink = 'admin.report-problems.update';
+        $this->editLink = 'admin.report-problems.edit';
     }
 
     protected static function validateRequest($request, $type)
@@ -70,15 +68,64 @@ class ItemController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $items = $this->model->latest();
+            $items = $this->model->orderBy('status','asc')->orderBy('created_at','desc');
+            if($request->search['value']){
+                $items = $items->whereHas('item',function($query) use ($request){
+                    $query->where('serial_number','like','%'.$request->search['value'].'%');
+                })->orWhereHas('item',function($query) use ($request){
+                    $query->where('hospital','like','%'.$request->search['value'].'%');
+                })->orWhereHas('item',function($query) use ($request){
+                    $query->whereHas('item',function($query) use ($request){
+                        $query->where('name','like','%'.$request->search['value'].'%');
+                    });
+                });
+            }
+
             return DataTables::of($items)
                 ->addColumn('action', function ($item) {
                     return '
-                           <a class="btn btn-danger btn-sm"  onclick="deleteItem(' . $item->id . ')"><i class="fas fa-trash text-white"></i></span></a> <a class="btn btn-warning btn-sm" onclick="editItem('.$item->id.')" ><i class="fas fa-pencil text-white    "></i></span></a>';
+                           <a class="btn btn-danger btn-sm"  onclick="deleteItem(' . $item->id . ')"><i class="fas fa-trash text-white"></i></span></a> <a class="btn btn-warning btn-sm" href="'.route('admin.report-problems.show',$item->id).'"><i class="fas fa-eye text-white    "></i></span></a>';
+                })
+                ->editColumn('status', function ($item) {
+                    if ($item->status == 0) {
+                        $name = 'Perlu Tanggapan';
+                        $class = 'danger';
+                    } else if ($item->status == 1) {
+                        $name = 'Ditanggapi';
+                        $class = 'primary';
+                    } else if ($item->status == 2) {
+                        $name = 'Selesai';
+                        $class = 'success';
+                    }
+                    return '<div onclick="changeStatus()" class="badge bg-' . $class . '" style="cursor:pointer">' . $name . '</div>';
+                })
+                ->addColumn('serial_number', function ($item) {
+                    return $item->item->serial_number;
+                })
+                ->addColumn('hospital', function ($item) {
+                    return $item->item->hospital;
+                })
+                ->addColumn('item', function ($item) {
+                    return "<a href='".route('admin.item-installeds.edit',$item->item->id)."'><b>" . $item->item->item->name . "</b></a><br>Tipe : " . $item->item->item->type . "<br>Merek : " . $item->item->item->brand;
+                })
+                ->editColumn('created_at', function ($item) {
+                    return date('d-m-Y', strtotime($item->created_at));
+                })
+                ->editColumn('response_at', function ($item) {
+                    if($item->response_at == null){
+                        return '-';
+                    }
+                    return date('d-m-Y', strtotime($item->response_at));
+                })
+                ->editColumn('finished_at', function ($item) {
+                    if($item->finished_at == null){
+                        return '-';
+                    }
+                    return date('d-m-Y', strtotime($item->finished_at));
                 })
                 ->removeColumn('id')
                 ->addIndexColumn()
-                ->rawColumns(['action'])
+                ->rawColumns(['action','status','item'])
                 ->make(true);
         }
         $data['title'] = $this->name;
@@ -86,9 +133,6 @@ class ItemController extends Controller
         $data['rows'] = $this->rows;
         $data['createLink'] = $this->createLink;
         $data['view'] = $this->view;
-
-        $data['types'] = ItemType::all();
-        $data['brands'] = ItemBrand::all();
         return view($this->view.'.index', $data);
     }
     /**
@@ -121,6 +165,18 @@ class ItemController extends Controller
             if ($v->fails()) {
                 throw new CustomException("error", 401, null, $v->errors()->all());
             }
+            $findType = ReportProblemType::where('name',$request->type)->first();
+            if(!$findType){
+                $type = new ReportProblemType();
+                $type->name = $request->type;
+                $type->save();
+            }
+            $findBrand = ReportProblemBrand::where('name',$request->brand)->first();
+            if(!$findBrand){
+                $brand = new ReportProblemBrand();
+                $brand->name = $request->brand;
+                $brand->save();
+            }
             $item = $this->newModel;
             $item->name = $request->name;
             $item->type = $request->type;
@@ -148,7 +204,13 @@ class ItemController extends Controller
      */
     public function show($id)
     {
-        //
+        $data['title'] = $this->name . ' - Detail Laporan Kendala';
+        $data['breadcrumb'] = $this->breadcrumb . ' - Detail Laporan Kendala';
+        $data['indexLink'] = $this->indexLink;
+        $data['report'] = ReportProblem::find($id);
+
+        $data['item'] = $data['report']->item;
+        return view('admin.report-problem.detail', $data);
     }
 
     /**
@@ -179,15 +241,15 @@ class ItemController extends Controller
                 throw new CustomException('error', 401, null, $v->errors()->all());
             }
             $item = $this->findById($id);
-            $findType = ItemType::where('name',$request->type)->first();
+            $findType = ReportProblemType::where('name',$request->type)->first();
             if(!$findType){
-                $type = new ItemType();
+                $type = new ReportProblemType();
                 $type->name = $request->type;
                 $type->save();
             }
-            $findBrand = ItemBrand::where('name',$request->brand)->first();
+            $findBrand = ReportProblemBrand::where('name',$request->brand)->first();
             if(!$findBrand){
-                $brand = new ItemBrand();
+                $brand = new ReportProblemBrand();
                 $brand->name = $request->brand;
                 $brand->save();
             }
@@ -216,12 +278,6 @@ class ItemController extends Controller
     {
         try {
             $item = $this->findById($id);
-            if(!$item){
-                throw new CustomException("error", 404, null, ["Data not found"]);
-            }
-            if($item->image){
-                GlobalFunction::deleteSingleImage($item->image);
-            }
             $item->delete();
             return response()->json(['message' => "$this->name has been deleted !"], 200);
         }catch (Exception $e) {
@@ -232,14 +288,22 @@ class ItemController extends Controller
     }
 
 
-    public function changeShow ($id){
+    public function change($id){
         $item = $this->findById($id);
-        if ($item->status == 1) {
-            $item->status = 0;
-        } else {
-            $item->status = 1;
+        $item->status = request()->status;
+        if(request()->status == 1){
+            $item->response_at = date('Y-m-d');
+        }else if(request()->status == 2){
+            $item->response_at = date('Y-m-d');
+            $item->finished_at = date('Y-m-d');
+            $item->item->status = 0;
+            $item->item->save();
+        }
+        if(request()->status == 0){
+            $item->response_at = null;
+            $item->finished_at = null;
         }
         $item->save();
-        return response()->json(['message' => 'Data berhasil diubah', 'status' => 200]);
+        return redirect()->back()->with('success','Status Laporan berhasil diubah !');
     }
 }
