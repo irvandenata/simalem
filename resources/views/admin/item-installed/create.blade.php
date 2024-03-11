@@ -68,6 +68,12 @@
                   </div>
                   <div class="form-group mb-3 col-12">
                     <div class="form-line">
+                      <label for="source">Nomor PO</label>
+                    <input type="text" placeholder="Masukkan Nomor PO" name="po_number" class="form-control" required>
+                    </div>
+                  </div>
+                  <div class="form-group mb-3 col-12">
+                    <div class="form-line">
                       <label for="source">Tanggal Installasi</label>
                       <input type="date"
                        name="date_installed"  onfocus="this.showPicker()"  class="form-control"

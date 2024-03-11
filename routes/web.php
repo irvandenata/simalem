@@ -20,7 +20,7 @@ Route::get('/report-problem/{id}/{status}', [App\Http\Controllers\CustomerReport
 Route::post('/report-problem/{id}', [App\Http\Controllers\CustomerReportController::class, 'store'])->name('report-problem.send');
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.post');
-Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
@@ -41,6 +41,7 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
 
     Route::resource('item-installeds', App\Http\Controllers\Admin\ItemInstalledController::class);
     Route::get('/item-installeds/{id}/change-show', [App\Http\Controllers\Admin\ItemInstalledController::class, 'changeShow']);
+    Route::get('/item-installeds/{id}/pdf', [App\Http\Controllers\Admin\ItemInstalledController::class, 'downloadPdf'])->name('item-installeds.pdf');
 
     Route::get('notif-warning', [App\Http\Controllers\Admin\NotifController::class, 'notifMaintenance'])->name('notif-warning');
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\CustomException;
 use App\Helpers\GlobalFunction;
 use App\Http\Controllers\Controller;
+use App\Models\Item;
+use App\Models\ItemInstalled;
 use App\Models\ReportProblem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -80,6 +82,19 @@ class ReportProblemController extends Controller
                     });
                 });
             }
+            if($request->status != 'all'){
+                $items = $items->where('status',$request->status);
+            }
+            if($request->hospital != 'all'){
+                $items = $items->whereHas('item',function($query) use ($request){
+                    $query->where('hospital',$request->hospital);
+                });
+            }
+            if($request->item != 'all'){
+                $items = $items->whereHas('item',function($query) use ($request){
+                    $query->where('item_id',$request->item);
+                });
+            }
 
             return DataTables::of($items)
                 ->addColumn('action', function ($item) {
@@ -133,6 +148,8 @@ class ReportProblemController extends Controller
         $data['rows'] = $this->rows;
         $data['createLink'] = $this->createLink;
         $data['view'] = $this->view;
+        $data['hospitals'] = ItemInstalled::select('hospital')->groupBy('hospital')->get();
+        $data['items'] = Item::all();
         return view($this->view.'.index', $data);
     }
     /**

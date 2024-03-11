@@ -114,13 +114,6 @@
               <div data-i18n="Users">Daftar Alat Terinstallasi</div>
             </a>
           </li>
-          <li class="menu-item @if (Request::is('admin/items*')) active @endif">
-            <a href="{{ route('admin.items.index') }}" class="menu-link">
-              <i class="menu-icon tf-icons bx bx-carousel"></i>
-              <div data-i18n="Users">Daftar Alat</div>
-            </a>
-          </li>
-
           <li class="menu-item @if (Request::is('admin/report-problems*')) active @endif">
             <a href="{{ route('admin.report-problems.index') }}" class="menu-link">
               <i class="menu-icon tf-icons bx bx-carousel"></i>
@@ -171,6 +164,17 @@
               <div data-i18n="Analytics">Social Media</div>
             </a>
           </li> --}}
+
+          <li class="menu-item " style="margin-left:30px;margin-top:20px;">
+            <div class="">Inventaris</div>
+          </li>
+
+          <li class="menu-item @if (Request::is('admin/items*')) active @endif">
+            <a href="{{ route('admin.items.index') }}" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-carousel"></i>
+              <div data-i18n="Users">Daftar Alat</div>
+            </a>
+          </li>
 
 
 
@@ -268,12 +272,12 @@
                           <div class="d-flex">
                             <div class="flex-shrink-0 me-3">
                               <div class="avatar">
-                                <span class="avatar-initial rounded-circle bg-label-success">NW</span>
+                                <span class="avatar-initial rounded-circle bg-label-success">i</span>
                               </div>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="mb-1">{{ $data['title']??"-" }}</h3>
-                                <small class="mb-1">{{ $data['data'] }}</small><br>
+                              <h3 class="mb-1">{{ $data['title'] ?? '-' }}</h3>
+                              <small class="mb-1">{{ $data['data'] }}</small><br>
                               <a href="{{ route('admin.read-notif') }}?link={{ $data['link'] }}&id={{ $notif->id }}"
                                 class="mb-0">Lihat Detail</a><br>
                               <small
@@ -282,8 +286,8 @@
                             <div class="flex-shrink-0 dropdown-notifications-actions">
                               <a href="javascript:void(0)" class="dropdown-notifications-read"><span
                                   class="badge badge-dot"></span></a>
-                              <a href="javascript:void(0)" class="dropdown-notifications-archive"  data-id="{{ $notif->id }}"><span
-                                  class="bx bx-x"></span></a>
+                              <a href="javascript:void(0)" class="dropdown-notifications-archive"
+                                data-id="{{ $notif->id }}"><span class="bx bx-x"></span></a>
                             </div>
                           </div>
                         </li>
@@ -340,19 +344,13 @@
                         </div>
                         <div class="flex-grow-1">
                           <span class="fw-semibold d-block">{{ auth()->user()->name }}</span>
-                          <small class="text-muted">Admin</small>
+                          <small class="text-muted">{{ auth()->user()->name }}</small>
                         </div>
                       </div>
                     </a>
                   </li>
                   <li>
                     <div class="dropdown-divider"></div>
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#">
-                      <i class="bx bx-user me-2"></i>
-                      <span class="align-middle">Profile</span>
-                    </a>
                   </li>
                   <li>
                     <div class="dropdown-divider"></div>
@@ -395,18 +393,9 @@
                   document.write(new Date().getFullYear());
                 </script>
                 , made with ❤️ by
-                <a href="https://themeselection.com" target="_blank" class="footer-link fw-bolder">ThemeSelection</a>
+                Simalem
               </div>
-              <div>
-                <a href="https://themeselection.com/license/" class="footer-link me-4" target="_blank">License</a>
-                <a href="https://themeselection.com/" target="_blank" class="footer-link me-4">More Themes</a>
 
-                <a href="https://themeselection.com/demo/sneat-bootstrap-html-admin-template/documentation/"
-                  target="_blank" class="footer-link me-4">Documentation</a>
-
-                <a href="https://github.com/themeselection/sneat-html-admin-template-free/issues" target="_blank"
-                  class="footer-link me-4">Support</a>
-              </div>
             </div>
           </footer>
           <!-- / Footer -->
@@ -547,7 +536,7 @@
         $(this).parent().parent().parent().remove();
 
         $.ajax({
-          url: "{{ route('admin.read-notif') }}" + "?id="+  $(this).data('id'),
+          url: "{{ route('admin.read-notif') }}" + "?id=" + $(this).data('id'),
           type: 'GET',
           success: function(result) {
             console.log(result);

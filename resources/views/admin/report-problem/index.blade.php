@@ -23,6 +23,40 @@
         <div class="text-right">
           <div class="btn btn-outline-warning btn-sm mb-2" onclick="reloadDatatable()">Reload Data</div>
         </div>
+        <div class="text-right row my-4">
+            <div class="form-group col-3">
+              <label for="" class="label mb-2">Tempat</label>
+              <select name="" id="hospital" class="form-control select2">
+                <option value="all">All</option>
+                @foreach ($hospitals as $item)
+                  <option value="{{ $item->hospital }}">{{ $item->hospital }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group col-3">
+              <label for="" class="label mb-2">Alat</label>
+              <select name="" id="item" class="form-control select2">
+                <option value="all">All</option>
+                @foreach ($items as $item)
+                  <option value="{{ $item->id }}">{{ $item->name }} - Merk : {{ $item->brand }} - Tipe :
+                    {{ $item->type }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group col-3">
+              <label for="" class="label mb-2">Status Tanggapan</label>
+              <select name="" id="status" class="form-control ">
+                <option value="all">All</option>
+                <option value="0">Belum Ditanggapi</option>
+                <option value="1">Sudah Ditanggapi</option>
+                <option value="2">Selesai</option>
+              </select>
+            </div>
+
+            <div class="form-group col-3 mt-4 d-flex align-items-end">
+              <button id="reset" class="btn btn-success" style="height: 40px">Reset</button>
+            </div>
+          </div>
         <div class="table-responsive">
           <table id="datatable" style="max-width:100% !important" class="table m-t-30">
             <thead>
@@ -73,6 +107,11 @@
       ajax: {
         url: child_url,
         type: 'GET',
+        data: function(data) {
+          data.hospital = $('#hospital').val();
+          data.item = $('#item').val();
+          data.status = $('#status').val();
+        }
       },
       columns: [{
           data: 'DT_RowIndex',
@@ -93,6 +132,22 @@
         @endforeach
       ]
     });
+
+    $('#reset').on('click', function() {
+      $('#hospital').val('all').trigger('change');
+      $('#item').val('all').trigger('change');
+      $('#status').val('all').trigger('change');
+      reloadDatatable();
+    })
+    $('#hospital').on('change', function() {
+      reloadDatatable();
+    })
+    $('#item').on('change', function() {
+      reloadDatatable();
+    })
+    $('#status').on('change', function() {
+      reloadDatatable();
+    })
   </script>
 
   <script>

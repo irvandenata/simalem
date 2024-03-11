@@ -3,11 +3,17 @@
     .select2-container{
         width: 100% !important;
     }
-
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 26px;
+    position: absolute;
+    top: 9px;
+    right: 11px;
+    width: 20px;
+}
     .select2-selection.select2-selection--single{
         display: block;
     width: 100%;
-    height: 45px;
+    height: 40px;
     padding: 0.4375rem 0.875rem;
     font-size: 0.9375rem;
     font-weight: 400;

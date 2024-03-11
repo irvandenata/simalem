@@ -6,13 +6,13 @@ use App\Helpers\GlobalFunction;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\ItemInstalled;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
-
 class ItemInstalledController extends Controller
 {
     protected $name = 'Daftar Alat Terinstall';
@@ -34,8 +34,8 @@ class ItemInstalledController extends Controller
         $this->newModel = new ItemInstalled();
         $this->model = ItemInstalled::query();
         $this->rows = [
-            'name' => ['Rumah Sakit', 'Alat','Nomor Seri', "Kondisi Alat", 'Maintenance Terakhir', 'Status Garansi'],
-            'column' => ['hospital', 'item', 'serial_number','item_status', 'latest_maintenance', 'warranty_status'],
+            'name' => ['Rumah Sakit', 'Alat',"Nomor PO",'Nomor Seri', "Kondisi Alat", 'Maintenance Terakhir', 'Status Garansi'],
+            'column' => ['hospital', 'item', 'po_number','serial_number','item_status', 'latest_maintenance', 'warranty_status'],
         ];
         $this->createLink = route('admin.item-installeds.create');
         $this->storeLink = route('admin.item-installeds.store');
@@ -81,11 +81,56 @@ class ItemInstalledController extends Controller
     {
         if ($request->ajax()) {
             $items = $this->model;
-            $items = $items->latest()->get();
+            if ($request->hospital && $request->hospital != 'all') {
+                $items = $items->where('hospital', $request->hospital);
+            }
+            if ($request->item && $request->item != 'all') {
+                $items = $items->where('item_id', $request->item);
+            }
+            if($request->condition != 'all'){
+                if($request->condition == 1){
+                    $items = $items->where('status', 1);
+                }else if($request->condition == 2){
+                    $items = $items->where('status', 2);
+                }else if($request->condition == 3){
+                    $items = $items->where('status', 3);
+                }else if($request->condition == 4){
+                    $items = $items->where('status', 4);
+                }else {
+                    $items = $items->where('status', 0);
+                }
+            }
+            // if ($request->status && $request->status != 'all') {
+            //     $items = $items->where('status', $request->status);
+            // }
+
+            if($request->maintenance != 'all'){
+                if($request->maintenance == 3){
+                    $items = $items->where('maintenance_created_at_third', '!=', null);
+                }else if($request->maintenance == 2){
+                    $items = $items->where('maintenance_created_at_second', '!=', null)->where('maintenance_created_at_third', null);
+                }else if($request->maintenance == 1){
+                    $items = $items->where('maintenance_created_at_first', '!=', null)->where('maintenance_created_at_second', null)->where('maintenance_created_at_third', null);
+                }else{
+                    $items = $items->where('maintenance_created_at_first', null)->where('maintenance_created_at_second', null)->where('maintenance_created_at_third', null);
+                }
+            }
+            if ($request->warranty && $request->warranty != 'all') {
+                if($request->warranty == 1){
+                    $date = date('Y-m-d');
+                    $items = $items->where('warranty_date', '>', $date);
+                }else{
+                    $date = date('Y-m-d');
+                    $items = $items->where('warranty_date', '<', $date);
+                }
+            }
+            $items = $items->latest();
             return DataTables::of($items)
                 ->addColumn('action', function ($item) {
                     return '
-                    <a class="btn btn-primary btn-sm" target="blank" href="'.url('/report-problem/'.$item->unique_code).'"><i class="fas text-white"></i> Lihat Halaman Laporan</span></a>
+                    <a class="btn btn-primary btn-sm" target="blank" href="'.url('/report-problem/'.$item->unique_code).'">Form</a>
+                    <a class="btn btn-primary btn-sm" target="blank" href="'.route('admin.item-installeds.pdf', $item->id).'">QR Code</a>
+
                            <a class="btn btn-danger btn-sm"  onclick="deleteItem(' . $item->id . ')"><i class="fas fa-trash text-white"></i></span></a> <a class="btn btn-warning btn-sm" href="' . route($this->editLink, $item->id) . '" ><i class="fas fa-eye text-white    "></i></span></a>';
                 })
                 ->addColumn('item', function ($item) {
@@ -143,6 +188,8 @@ class ItemInstalledController extends Controller
         $data['breadcrumb'] = $this->breadcrumb;
         $data['rows'] = $this->rows;
         $data['createLink'] = $this->createLink;
+        $data['hospitals'] = ItemInstalled::orderBy('hospital', 'asc')->select('hospital')->groupBy('hospital')->get();
+        $data['items'] = Item::orderBy('name', 'asc')->get();
         return view($this->view . '.index', $data);
     }
 
@@ -187,6 +234,7 @@ class ItemInstalledController extends Controller
             $item->contact_person = $request->contact_person;
             $item->item_id = $request->item_id;
             $item->serial_number = $request->serial_number;
+            $item->po_number = $request->po_number;
             $item->date_installed = $request->date_installed;
             $item->warranty_date = $request->warranty_date;
             $item->maintenance_date_first = $request->maintenance_date_first;
@@ -276,6 +324,7 @@ class ItemInstalledController extends Controller
             $item->contact_person = $request->contact_person;
             $item->item_id = $request->item_id;
             $item->serial_number = $request->serial_number;
+            $item->po_number = $request->po_number;
             $item->date_installed = $request->date_installed;
             $item->warranty_date = $request->warranty_date;
             $item->maintenance_date_first = $request->maintenance_date_first;
@@ -353,6 +402,14 @@ class ItemInstalledController extends Controller
             $item->save();
         }
         return redirect()->back()->with('success', 'Laporan Maintenance Berhasil Disimpan');
+    }
+
+    public function downloadPdf($id){
+        $item = ItemInstalled::find($id);
+        $pdf = Pdf::loadView('pdf', compact('item'));
+        $customPaper = array(0,0,260,260);
+        $pdf->setPaper($customPaper);
+        return $pdf->download('qr-code-'.$item->item->name."-".$item->serial_number.'.pdf');
     }
 
 }

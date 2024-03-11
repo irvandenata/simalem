@@ -102,19 +102,19 @@
                                     <h2>{{  ucwords($item->hospital)
                                      }}</h2>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-sm-12 col-md-12 col-lg-3 ">
                                     <label for="">Nama Alat</label>
                                     <input type="text" class="form-control" value="{{ $item->item->name }}" disabled>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-sm-12 col-md-12 col-lg-3 ">
                                     <label for="">Nomor Seri</label>
                                     <input type="text" class="form-control" value="{{ $item->serial_number }}" disabled>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-sm-12 col-md-12 col-lg-3 ">
                                     <label for="">Nama Tipe</label>
                                     <input type="text" class="form-control" value="{{ $item->item->type }}" disabled>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-sm-12 col-md-12 col-lg-3 ">
                                     <label for="">Nama Merek</label>
                                     <input type="text" class="form-control" value="{{ $item->item->brand }}" disabled>
                                 </div>
