@@ -152,6 +152,7 @@ class ReportProblemController extends Controller
         $data['items'] = Item::all();
         return view($this->view.'.index', $data);
     }
+
     /**
      * Show the form for creating a new resource.
      *

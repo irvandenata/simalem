@@ -46,8 +46,6 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
 
     Route::get('notif-warning', [App\Http\Controllers\Admin\NotifController::class, 'notifMaintenance'])->name('notif-warning');
 
-
-
     Route::post('item-installeds/{id}/maintenance', [App\Http\Controllers\Admin\ItemInstalledController::class, 'storeMaintenance'])->name('item-installeds.maintenance.store');
 
     Route::resource('report-problems', App\Http\Controllers\Admin\ReportProblemController::class);
