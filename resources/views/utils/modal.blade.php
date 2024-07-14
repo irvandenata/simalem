@@ -1,4 +1,4 @@
-<div class="modal fade " id="modalForm" tabindex="-1" role="dialog">
+<div class="modal fade " id="modalForm"  role="dialog">
    <div class="modal-dialog modal-dialog-centered @yield('modal-size')" role="document">
        <div class="modal-content">
            <form  method="POST">

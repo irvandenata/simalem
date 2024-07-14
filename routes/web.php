@@ -26,6 +26,7 @@ Route::prefix('admin')->as('admin.')->middleware('auth') ->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/datatable', [App\Http\Controllers\Admin\DashboardController::class, 'datatable'])->name('dashboard.data');
 
+    Route::post('update-profile/{id}', [App\Http\Controllers\Admin\UserController::class, 'update'])->name('update-profile');
     Route::get('/admin/read-notif',function(){
         $idNotif = request()->id;
         $notif = auth()->user()->notifications()->where('id',$idNotif)->first()->markAsRead();

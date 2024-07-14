@@ -47,6 +47,7 @@
 
 @push('js')
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
   <script src="https://cdn.tiny.cloud/1/i1nnds4l5jeoaufjhsu6l45pa8zxzdwc4vwh9dktv8d5gig4/tinymce/6/tinymce.min.js"
     referrerpolicy="origin"></script>
 @endpush
@@ -54,6 +55,10 @@
 @push('script')
   @include('utils.js')
   <script>
+    $(".select2creation").select2({
+        dropdownParent: $("#modalForm"),
+        tags: true,
+    });
     tinymce.init({
       selector: 'textarea#myeditorinstance', // Replace this CSS selector to match the placeholder element for TinyMCE
       plugins: 'code table lists',
@@ -128,10 +133,5 @@
     function reloadDatatable() {
       dataTable.ajax.reload();
     }
-
-    $(".select2creation").select2({
-      tags: true,
-      dropdownParent: $('.modal')
-    });
   </script>
 @endpush

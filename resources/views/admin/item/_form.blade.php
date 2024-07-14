@@ -11,6 +11,8 @@
         <label for="name">Tipe Alat</label>
         <select name="type" class="form-control select2creation" required>
           <option selected value="" disabled>Pilih Atau Tambah Tipe</option>
+          <option value="adwd">awdawd</option>
+
           @foreach ($types as $type)
             <option value="{{ $type->name }}">{{ $type->name }}</option>
             @endforeach
@@ -27,9 +29,5 @@
       </div>
     </div>
   </div>
-
-
-
-
 @endsection
 

@@ -329,7 +329,7 @@
               <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                   <div class="avatar avatar-online">
-                    <img src="{{ asset('assets') }}/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                    <img src="{{ asset('assets') }}/logo.png" alt class="w-px-40 h-auto rounded-circle" />
                   </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -338,7 +338,7 @@
                       <div class="d-flex">
                         <div class="flex-shrink-0 me-3">
                           <div class="avatar avatar-online">
-                            <img src="{{ asset('assets') }}/img/avatars/1.png" alt
+                            <img src="{{ asset('assets') }}/logo.png" alt
                               class="w-px-40 h-auto rounded-circle" />
                           </div>
                         </div>
@@ -351,6 +351,9 @@
                   </li>
                   <li>
                     <div class="dropdown-divider"></div>
+                  </li>
+                  <li id="setProfil">
+                    <span class="dropdown-item cursor-pointer">Pengaturan Akun</span>
                   </li>
                   <li>
                     <div class="dropdown-divider"></div>
@@ -405,6 +408,11 @@
         <!-- Content wrapper -->
       </div>
       <!-- / Layout page -->
+    </div>
+
+
+    <div>
+      @include('layouts._formProfil')
     </div>
 
     <!-- Overlay -->
@@ -543,6 +551,50 @@
           }
         });
       });
+    });
+
+
+    $('#setProfil').on('click', function() {
+      $('#modalFormProfil').modal('show');
+    });
+
+    $('#updateProfile').on('submit', function(e) {
+      e.preventDefault();
+      let password = $('input[name=password]').val();
+      let password_confirm = $('input[name=password_confirm]').val();
+
+      if (password != password_confirm) {
+        let passEl = $('#pass');
+        passEl.addClass('is-invalid');
+        passEl.focus();
+        // add message
+        alert('Password tidak sama');
+        return;
+      }
+      $.ajax({
+        url: "{{ route('admin.update-profile', auth()->user()->id) }}",
+        type: 'POST',
+        data: $(this).serialize(),
+        success: function(result) {
+          $('#modalFormProfil').modal('hide');
+
+          if (result.status == 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: result.message,
+            })
+          } else {
+
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: result.message,
+            })
+          }
+        }
+      });
+
     });
   </script>
 </body>

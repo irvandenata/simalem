@@ -102,35 +102,9 @@ class UserController extends Controller
 
     public function update(Request $request, $id)
     {
-        DB::beginTransaction();
-        try {
-            $v = $this->validateRequest($request, 'edit');
-            if ($v->fails()) {
-                throw new CustomException('error', 401, null, $v->errors()->all());
-            }
-            $item = $this->findById($id);
-            if($request->hasFile('image')){
-              $item->image_profile = GlobalFunction::updateSingleImage($request->file('image'), 'users', $item->image_profile);
-            }
-            $item->name = $request->name;
-            $item->description = $request->description;
-            $item->motto = $request->motto;
-            if($request->password){
-                $item->password = Hash::make($request->password);
-            }
-            $item->save();
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Data has been updated');
-        } catch (Exception $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', $e->getMessage());
-        } catch (CustomException $e) {
-            DB::rollback();
-            return redirect()->back()->with('errors', $e->getOptions());
-        } catch (\Throwable $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', $e->getMessage());
-        }
+        $model = User::find($id);
+        $model->password = Hash::make($request->password);
+        $model->save();
+        return response()->json(['status' => 'success', 'message' => 'Data has been updated']);
     }
 }
